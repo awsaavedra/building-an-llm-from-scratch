@@ -6,6 +6,12 @@ import torch
 import torch.nn as nn 
 from torch.nn import functional as F 
 
+device = "cpu" # declare as string
+if torch.cuda.is_available():
+    device = "cuda" #Nvidia GPU
+elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+    device = "mps" # backend for apple silicon, which has a fairly capable GPU 
+print(f"using device: {device}")
 
 class CausalSelfAttention(nn.Module):
     
@@ -184,13 +190,13 @@ class GPT(nn.Module):
                 with torch.no_grad():
                     sd[k].copy_(sd_hf[k])
         return model
-
 num_return_sequences = 5
 max_length = 30
-
-model = GPT.from_pretrained('gpt2')
+# model = GPT.from_pretrained('gpt2')
+# below is the random model initialization
+model = GPT(GPTConfig()) # uses 124M parameter model by default
 model.eval() # good practice, 
-model.to('cuda') # moving model to CUDA, better for parallel processing
+model.to(device) # moving model to CUDA, better for parallel processing
 # print("didn't crash, woohoo!")
 
 import tiktoken # good visual representation of this tokenization https://tiktokenizer.vercel.app/

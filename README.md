@@ -5,7 +5,16 @@ Just a project to build various OSS model work, for now it is ChatGPT2
 # Project objectives
 - [x] Initialize the model from scratch by ourselves
 - [ ] Then we are going to try to surpass that model that we loaded
-    - we will rediscover the weights from scratch
+    - [ ] we will rediscover the weights from scratch
+        - [ ] We want to process these token sequences and feed them into a transformer
+            - [ ] Specifically, rearrange tokens into the `idx` variable within the the model.
+                - Each **batch** should be `T` tokens setup which is shape of `(B, T)`
+                - Where `T` cannot be larger than the `MAX_SEQUENCE` length
+                - Two tensors:
+                    - offset tensor tokens + 1
+                    - labels 
+                - So within the model we created a dataloader object that loads these objects into the transformer
+                - Then outputs the loss (function)
 Things different from transformer architecture paper (Attention is all you need) - Figure 1 in paper
     - ChatGPT2 does not have an encoder, so the entire encoder is missing.
     - The attached cross-attention pathway that was using the encoder is missing as well
@@ -15,6 +24,10 @@ We are using the schema to support the huggingface site style
 The following was made after putting together a design spec reading and watching
 the following materials.
 
+- [ ] FINAL step will be to clean up the code
+    - [ ] Put everything into functions
+    - [ ] Create a main file and break up all classes into their own files
+    - [ ] Make a single app file that runs every file from there
 # Outputs you should see
 
 ![image](/gpt-2-model-output.png)

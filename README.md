@@ -8,6 +8,10 @@ the following materials:
 2. [Attention is all you need](https://arxiv.org/abs/1706.03762)
 3. Build a Large Language Model (From Scratch) by Sebastian Raschka 
 
+# Outputs you should see
+
+![image](/gpt-2-model-output.png)
+
 # Books Used 
 Objective: More materials for foundational theory of Machine Learning and architecture
 

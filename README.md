@@ -1,12 +1,19 @@
-# building-an-llm-from-scratch
 # build-an-llm-from-scratch
+Just a project to build various OSS model work, for now it is ChatGPT2
 
+
+# Project objectives
+- [x] Initialize the model from scratch by ourselves
+- [ ] Then we are going to try to surpass that model that we loaded
+    - we will rediscover the weights from scratch
+Things different from transformer architecture paper (Attention is all you need) - Figure 1 in paper
+    - ChatGPT2 does not have an encoder, so the entire encoder is missing.
+    - The attached cross-attention pathway that was using the encoder is missing as well
+    - Shuffled layer normalized
+    - An additional layer normalization was added right before the final classifier
+We are using the schema to support the huggingface site style 
 The following was made after putting together a design spec reading and watching
-the following materials:
-
-1. [Let's reproduce GPT-2 124M Parameter model](https://www.youtube.com/watch?v=l8pRSuU81PU)
-2. [Attention is all you need](https://arxiv.org/abs/1706.03762)
-3. Build a Large Language Model (From Scratch) by Sebastian Raschka 
+the following materials.
 
 # Outputs you should see
 
@@ -20,24 +27,14 @@ Objective: More materials for foundational theory of Machine Learning and archit
 3. [Deep Learning by Ian Goodfellow](https://www.deeplearningbook.org/)
 4. MATHEMATICS FOR MACHINE LEARNING Marc Peter Deisenroth A. Aldo Faisal Cheng Soon Ong
 
-# Machine Learning Papers
+# Videos used
+5. [Let's reproduce GPT-2 124M Parameter model](https://www.youtube.com/watch?v=l8pRSuU81PU)
+6. [Attention is all you need](https://arxiv.org/abs/1706.03762)
+7. Build a Large Language Model (From Scratch) by Sebastian Raschka 
+
+# Machine Learning Papers used
 
 1. [Language Models are Few-Shot Learners](https://arxiv.org/abs/2005.14165)
 2. [Language Models are Unsupervised Multitask Learners](https://web.archive.org/web/20250105120712/https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf)
 3. [Attention is all you need](https://arxiv.org/abs/1706.03762)
 4. [llms, use byte token instead of word token?](https://arxiv.org/abs/2412.09871) Mostly something for future iterations
-
-# Notes
-
-1. Initialize the model from scratch by ourselves
-
-2. Then we are going to try to surpass that model that we loaded
-    - we will rediscover the weights from scratch
-
-3. Things different from transformer architecture paper (Attention is all you need) - Figure 1 in paper
-    - ChatGPT2 does not have an encoder, so the entire encoder is missing.
-    - The attached cross-attention pathway that was using the encoder is missing as well
-    - Shuffled layer normalized
-    - An additional layer normalization was added right before the final classifier
-
-4. We are using the schema to support the huggingface site style 

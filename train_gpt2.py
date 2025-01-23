@@ -192,19 +192,38 @@ class GPT(nn.Module):
         return model
 num_return_sequences = 5
 max_length = 30
-# model = GPT.from_pretrained('gpt2')
-# below is the random model initialization
-model = GPT(GPTConfig()) # uses 124M parameter model by default
-model.eval() # good practice, 
-model.to(device) # moving model to CUDA, better for parallel processing
-# print("didn't crash, woohoo!")
 
 import tiktoken # good visual representation of this tokenization https://tiktokenizer.vercel.app/
 enc = tiktoken.get_encoding('gpt2')
+with open('input.txt', 'r') as f:
+    text = f.read()
+text = text[:1000]
+tokens = enc.encode(text)
+B, T = 4, 32 # note for non-pythoners, this assigns both things in order B = 4, T = 32
+buf = torch.tensor(tokens[:B*T + 1]).to(device) # added one as first tensor
+x = buf[:-1].view(B, T)
+y = buf[1:].view(B, T)
+
+# get logits
+# model = GPT.from_pretrained('gpt2')
+# below is the random model initialization
+model = GPT(GPTConfig()) # uses 124M parameter model by default
+model.to(device) # moving model to CUDA, better for parallel processing
+logits = model(x)
+# print("didn't crash, woohoo!")
+
 tokens = enc.encode("Hello, I'm a language model,")
-tokens = torch.tensor(tokens, dtype=torch.long) # (8,)
+# added .to(device) to fix issue of mismatch CPU and GPU running
+tokens = torch.tensor(tokens, dtype = torch.long).to(device) # (8,) 
 tokens = tokens.unsqueeze(0).repeat(num_return_sequences, 1) # (5, 8)
 x = tokens.to('cuda')
+
+print(logits.shape)
+import sys; sys.exit(0)
+
+# prefix tokens
+model.eval()
+num_return_sequences = 5
 
 # generate! right now x is (B, T) where B = 5, T = 8
 # set the seed to 42

@@ -201,8 +201,8 @@ text = text[:1000]
 tokens = enc.encode(text)
 B, T = 4, 32 # note for non-pythoners, this assigns both things in order B = 4, T = 32
 buf = torch.tensor(tokens[:B*T + 1]).to(device) # added one as first tensor
-x = buf[:-1].view(B, T)
-y = buf[1:].view(B, T)
+x = buf[:-1].view(B, T) 
+y = buf[1:].view(B, T) # labels are stored in y
 
 # get logits
 # model = GPT.from_pretrained('gpt2')

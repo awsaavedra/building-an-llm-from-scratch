@@ -64,9 +64,6 @@ class MLP(nn.Module):
         self.c_proj = nn.Linear(4 * config.n_embd, config.n_embd)
         
     def forward(self, x):
-        x = self.c_fc(x)
-        x = self.gelu(x)
-        x = self.c_proj(x)
         return x
 
 class Block(nn.Module):
@@ -121,7 +118,7 @@ class GPT(nn.Module):
         # lm_head is this linear part within figure 1
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False) # Why doesn't GPT2 use a bias? Explain.
     
-    def forward(self, idx):
+    def forward(self, idx, targets = None):
         # idx is of shape (B, T)
         B, T = idx.size() 
         assert T <= self.config.block_size, f"Cannot forward sequence of length {T}, block size is only {self.config.block_size}"
@@ -136,11 +133,11 @@ class GPT(nn.Module):
         # forward the final layernorm and the classifier
         x = self.transformer.ln_f(x)
         logits = self.lm_head(x) # (B, T, vocab_size)
-        return logits
-        
-        
-        
-        
+        loss = None
+        if targets is not None:
+            # flattening out a 3 dimensional (B, T, vocab_size) tensor into 2 dimensions (1 ... B_n*T_n, vocab_size) using https://pytorch.org/docs/stable/generated/torch.nn.functional.cross_entropy.html 
+            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1)) # note: targets are flattened too
+        return logits, loss
     # reminder: class method is the same as a constructor
     @classmethod
     def from_pretrained(cls, model_type):
@@ -200,30 +197,30 @@ with open('input.txt', 'r') as f:
 text = text[:1000]
 tokens = enc.encode(text)
 B, T = 4, 32 # note for non-pythoners, this assigns both things in order B = 4, T = 32
-buf = torch.tensor(tokens[:B*T + 1]).to(device) # added one as first tensor
+buf = torch.tensor(tokens[:B*T + 1]).to(device) # added one as first tensor, buff must be moved to device and b.c buff is not stateful it must be conv
 x = buf[:-1].view(B, T) 
 y = buf[1:].view(B, T) # labels are stored in y
 
 # get logits
-# model = GPT.from_pretrained('gpt2')
 # below is the random model initialization
 model = GPT(GPTConfig()) # uses 124M parameter model by default
 model.to(device) # moving model to CUDA, better for parallel processing
-logits = model(x)
-# print("didn't crash, woohoo!")
-
-tokens = enc.encode("Hello, I'm a language model,")
-# added .to(device) to fix issue of mismatch CPU and GPU running
-tokens = torch.tensor(tokens, dtype = torch.long).to(device) # (8,) 
-tokens = tokens.unsqueeze(0).repeat(num_return_sequences, 1) # (5, 8)
-x = tokens.to('cuda')
-
-print(logits.shape)
+# https://pytorch.org/docs/stable/generated/torch.optim.AdamW.html, fixes a bug with Adam optimization (AdamW is better IMO)
+optimizer = torch.optim.AdamW(model.parameters(), lr = 3e-4) # adam optimizer, alternative to SGD (stochastic gradient descent) optimizer
+for i in range(50):
+    optimizer.zero_grad() #ALWAYS start with a zero gradient for optimization
+    logits, loss = model(x, y)
+    loss.backward() # adds to gradients, always does a += on gradients
+    optimizer.step() # updates parameters to decrease loss
+    print(f"step {i}, loss: {loss.item()}") #loss is a tensor with a single element, item() converts that element to a single float will live (be shipped back to the CPU) in the CPU
 import sys; sys.exit(0)
-
 # prefix tokens
 model.eval()
 num_return_sequences = 5
+tokens = enc.encode("Hello, I'm a language model,")
+tokens = torch.tensor(tokens, dtype = torch.long).to(device) # (8,) added .to(device) to fix issue of mismatch CPU and GPU running
+tokens = tokens.unsqueeze(0).repeat(num_return_sequences, 1) # (5, 8)
+x = tokens.to('cuda')
 
 # generate! right now x is (B, T) where B = 5, T = 8
 # set the seed to 42
